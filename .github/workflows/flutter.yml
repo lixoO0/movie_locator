@@ -1,0 +1,125 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.7.2'
+        channel: 'stable'
+    
+    - name: Install dependencies
+      run: flutter pub get
+    
+    - name: Verify formatting
+      run: flutter format --dry-run --set-exit-if-changed .
+    
+    - name: Analyze project source
+      run: flutter analyze --fatal-infos
+    
+    - name: Run tests
+      run: flutter test --coverage
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.7.2'
+        channel: 'stable'
+    
+    - name: Install dependencies
+      run: flutter pub get
+    
+    - name: Generate code
+      run: flutter packages pub run build_runner build --delete-conflicting-outputs
+    
+    - name: Build APK
+      run: flutter build apk --release
+    
+    - name: Build App Bundle
+      run: flutter build appbundle --release
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-apk
+        path: build/app/outputs/flutter-apk/app-release.apk
+    
+    - name: Upload App Bundle
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-aab
+        path: build/app/outputs/bundle/release/app-release.aab
+
+  integration-test:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.7.2'
+        channel: 'stable'
+    
+    - name: Install dependencies
+      run: flutter pub get
+    
+    - name: Generate code
+      run: flutter packages pub run build_runner build --delete-conflicting-outputs
+    
+    - name: Run integration tests
+      run: flutter test integration_test/
+    
+    - name: Upload integration test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: integration-test-results
+        path: test_driver/
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run security scan
+      run: |
+        # Install security scanning tools
+        dart pub global activate security_scanner
+        
+        # Run security scan
+        dart pub global run security_scanner:security_scanner
+        
+    - name: Check for vulnerabilities
+      run: |
+        # Check for known vulnerabilities in dependencies
+        flutter pub deps --json | jq '.packages[] | select(.vulnerabilities != null)'
