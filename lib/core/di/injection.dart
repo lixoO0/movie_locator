@@ -18,11 +18,10 @@ import '../../features/movies/domain/usecases/search_movies.dart';
 import '../../features/movies/domain/usecases/get_movie_genres.dart';
 import '../../features/movies/presentation/bloc/movies_bloc.dart';
 
-part 'injection.config.dart';
+// part 'injection.config.dart';
 
 final getIt = GetIt.instance;
 
-@InjectableInit()
 Future<void> configureDependencies() async {
   // Initialize Hive
   await Hive.initFlutter();

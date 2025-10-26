@@ -8,7 +8,7 @@ import '../bloc/movies_state.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/movie_list.dart';
 import '../widgets/loading_widget.dart';
-import '../widgets/error_widget.dart';
+import '../widgets/error_widget.dart' as custom;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             },
           );
         } else if (state is MoviesError) {
-          return ErrorWidget(message: state.message);
+          return custom.CustomErrorWidget(message: state.message);
         }
         return const Center(
           child: Text('No movies available'),

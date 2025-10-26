@@ -9,7 +9,7 @@ import '../bloc/movies_state.dart';
 import '../../domain/entities/movie.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../widgets/loading_widget.dart';
-import '../widgets/error_widget.dart';
+import '../widgets/error_widget.dart' as custom;
 
 class MovieDetailsPage extends StatefulWidget {
   final int movieId;
@@ -40,7 +40,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           } else if (state is MovieDetailsLoaded) {
             return _buildMovieDetails(state.movie);
           } else if (state is MovieDetailsError) {
-            return ErrorWidget(
+            return custom.CustomErrorWidget(
               message: state.message,
               onRetry: () {
                 context.read<MoviesBloc>().add(GetMovieDetailsEvent(movieId: widget.movieId));
@@ -103,7 +103,13 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
           ),
           actions: [
             IconButton(

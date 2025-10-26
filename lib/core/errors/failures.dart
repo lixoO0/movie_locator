@@ -1,72 +1,39 @@
 import 'package:equatable/equatable.dart';
 
 abstract class Failure extends Equatable {
-  const Failure([List properties = const <dynamic>[]]);
+  final String message;
+  
+  const Failure({this.message = 'An error occurred'});
   
   @override
-  List<Object> get props => [];
+  List<Object> get props => [message];
 }
 
 // General failures
 class ServerFailure extends Failure {
-  final String message;
-  
-  const ServerFailure({this.message = 'Server error occurred'});
-  
-  @override
-  List<Object> get props => [message];
+  const ServerFailure({super.message = 'Server error occurred'});
 }
 
 class NetworkFailure extends Failure {
-  final String message;
-  
-  const NetworkFailure({this.message = 'Network connection error'});
-  
-  @override
-  List<Object> get props => [message];
+  const NetworkFailure({super.message = 'Network connection error'});
 }
 
 class CacheFailure extends Failure {
-  final String message;
-  
-  const CacheFailure({this.message = 'Cache error occurred'});
-  
-  @override
-  List<Object> get props => [message];
+  const CacheFailure({super.message = 'Cache error occurred'});
 }
 
 class ValidationFailure extends Failure {
-  final String message;
-  
-  const ValidationFailure({this.message = 'Validation error occurred'});
-  
-  @override
-  List<Object> get props => [message];
+  const ValidationFailure({super.message = 'Validation error occurred'});
 }
 
 class AuthenticationFailure extends Failure {
-  final String message;
-  
-  const AuthenticationFailure({this.message = 'Authentication failed'});
-  
-  @override
-  List<Object> get props => [message];
+  const AuthenticationFailure({super.message = 'Authentication failed'});
 }
 
 class PermissionFailure extends Failure {
-  final String message;
-  
-  const PermissionFailure({this.message = 'Permission denied'});
-  
-  @override
-  List<Object> get props => [message];
+  const PermissionFailure({super.message = 'Permission denied'});
 }
 
 class UnknownFailure extends Failure {
-  final String message;
-  
-  const UnknownFailure({this.message = 'Unknown error occurred'});
-  
-  @override
-  List<Object> get props => [message];
+  const UnknownFailure({super.message = 'Unknown error occurred'});
 }

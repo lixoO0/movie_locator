@@ -1,39 +1,20 @@
 import 'package:dio/dio.dart';
-import 'package:retrofit/retrofit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../constants/app_constants.dart';
 
-part 'api_client.g.dart';
-
-@RestApi()
-abstract class ApiClient {
-  factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
+class ApiClient {
+  final Dio _dio;
+  
+  ApiClient(this._dio);
   
   static ApiClient create() {
-    final dio = Dio();
-    
-    // Add interceptors
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          // Add API key to all requests
-          options.queryParameters['api_key'] = dotenv.env[AppConstants.tmdbApiKey];
-          options.queryParameters['language'] = 'en-US';
-          handler.next(options);
-        },
-        onError: (error, handler) {
-          // Handle common errors
-          if (error.response?.statusCode == 401) {
-            // Handle unauthorized
-          } else if (error.response?.statusCode == 404) {
-            // Handle not found
-          } else if (error.response?.statusCode == 500) {
-            // Handle server error
-          }
-          handler.next(error);
-        },
-      ),
-    );
+    final dio = Dio(BaseOptions(
+      baseUrl: AppConstants.tmdbBaseUrl,
+      queryParameters: {
+        'api_key': dotenv.env[AppConstants.tmdbApiKey] ?? 'd9958d28016a4e407bca77533fadc6cf',
+        'language': 'en-US',
+      },
+    ));
     
     // Add logging interceptor in debug mode
     if (const bool.fromEnvironment('dart.vm.product') == false) {
@@ -44,95 +25,75 @@ abstract class ApiClient {
       ));
     }
     
-    return ApiClient(dio, baseUrl: AppConstants.tmdbBaseUrl);
+    return ApiClient(dio);
   }
   
   // Movies endpoints
-  @GET('/movie/popular')
-  Future<Map<String, dynamic>> getPopularMovies({
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> getPopularMovies({int page = 1}) async {
+    final response = await _dio.get('/movie/popular', queryParameters: {'page': page});
+    return response.data;
+  }
   
-  @GET('/movie/top_rated')
-  Future<Map<String, dynamic>> getTopRatedMovies({
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> getTopRatedMovies({int page = 1}) async {
+    final response = await _dio.get('/movie/top_rated', queryParameters: {'page': page});
+    return response.data;
+  }
   
-  @GET('/movie/now_playing')
-  Future<Map<String, dynamic>> getNowPlayingMovies({
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> getNowPlayingMovies({int page = 1}) async {
+    final response = await _dio.get('/movie/now_playing', queryParameters: {'page': page});
+    return response.data;
+  }
   
-  @GET('/movie/upcoming')
-  Future<Map<String, dynamic>> getUpcomingMovies({
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> getUpcomingMovies({int page = 1}) async {
+    final response = await _dio.get('/movie/upcoming', queryParameters: {'page': page});
+    return response.data;
+  }
   
-  @GET('/movie/{movie_id}')
-  Future<Map<String, dynamic>> getMovieDetails(
-    @Path('movie_id') int movieId,
-  );
-  
-  @GET('/movie/{movie_id}/credits')
-  Future<Map<String, dynamic>> getMovieCredits(
-    @Path('movie_id') int movieId,
-  );
-  
-  @GET('/movie/{movie_id}/videos')
-  Future<Map<String, dynamic>> getMovieVideos(
-    @Path('movie_id') int movieId,
-  );
-  
-  @GET('/movie/{movie_id}/reviews')
-  Future<Map<String, dynamic>> getMovieReviews(
-    @Path('movie_id') int movieId, {
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> getMovieDetails(int movieId) async {
+    final response = await _dio.get('/movie/$movieId');
+    return response.data;
+  }
   
   // TV Shows endpoints
-  @GET('/tv/popular')
-  Future<Map<String, dynamic>> getPopularTvShows({
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> getPopularTvShows({int page = 1}) async {
+    final response = await _dio.get('/tv/popular', queryParameters: {'page': page});
+    return response.data;
+  }
   
-  @GET('/tv/top_rated')
-  Future<Map<String, dynamic>> getTopRatedTvShows({
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> getTopRatedTvShows({int page = 1}) async {
+    final response = await _dio.get('/tv/top_rated', queryParameters: {'page': page});
+    return response.data;
+  }
   
-  @GET('/tv/on_the_air')
-  Future<Map<String, dynamic>> getOnTheAirTvShows({
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> getOnTheAirTvShows({int page = 1}) async {
+    final response = await _dio.get('/tv/on_the_air', queryParameters: {'page': page});
+    return response.data;
+  }
   
-  @GET('/tv/{tv_id}')
-  Future<Map<String, dynamic>> getTvShowDetails(
-    @Path('tv_id') int tvId,
-  );
+  Future<Map<String, dynamic>> getTvShowDetails(int tvId) async {
+    final response = await _dio.get('/tv/$tvId');
+    return response.data;
+  }
   
   // Search endpoints
-  @GET('/search/movie')
-  Future<Map<String, dynamic>> searchMovies({
-    @Query('query') required String query,
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> searchMovies({required String query, int page = 1}) async {
+    final response = await _dio.get('/search/movie', queryParameters: {'query': query, 'page': page});
+    return response.data;
+  }
   
-  @GET('/search/tv')
-  Future<Map<String, dynamic>> searchTvShows({
-    @Query('query') required String query,
-    @Query('page') int page = 1,
-  });
-  
-  @GET('/search/multi')
-  Future<Map<String, dynamic>> searchMulti({
-    @Query('query') required String query,
-    @Query('page') int page = 1,
-  });
+  Future<Map<String, dynamic>> searchTvShows({required String query, int page = 1}) async {
+    final response = await _dio.get('/search/tv', queryParameters: {'query': query, 'page': page});
+    return response.data;
+  }
   
   // Genres endpoints
-  @GET('/genre/movie/list')
-  Future<Map<String, dynamic>> getMovieGenres();
+  Future<Map<String, dynamic>> getMovieGenres() async {
+    final response = await _dio.get('/genre/movie/list');
+    return response.data;
+  }
   
-  @GET('/genre/tv/list')
-  Future<Map<String, dynamic>> getTvGenres();
+  Future<Map<String, dynamic>> getTvGenres() async {
+    final response = await _dio.get('/genre/tv/list');
+    return response.data;
+  }
 }

@@ -1,19 +1,24 @@
-import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/genre.dart';
 
-part 'genre_model.g.dart';
-
-@JsonSerializable()
 class GenreModel extends Genre {
   const GenreModel({
     required super.id,
     required super.name,
   });
   
-  factory GenreModel.fromJson(Map<String, dynamic> json) =>
-      _$GenreModelFromJson(json);
+  factory GenreModel.fromJson(Map<String, dynamic> json) {
+    return GenreModel(
+      id: json['id'] as int,
+      name: json['name'] as String? ?? '',
+    );
+  }
   
-  Map<String, dynamic> toJson() => _$GenreModelToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+    };
+  }
   
   factory GenreModel.fromEntity(Genre genre) {
     return GenreModel(
