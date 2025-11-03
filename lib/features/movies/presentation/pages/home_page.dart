@@ -67,20 +67,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Movie Locator'),
+        title: const Text(
+          'Movie Locator',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
+            tooltip: 'Search',
             onPressed: () => context.go('/search'),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
           tabs: const [
-            Tab(text: 'Popular'),
-            Tab(text: 'Top Rated'),
-            Tab(text: 'Now Playing'),
-            Tab(text: 'Upcoming'),
+            Tab(icon: Icon(Icons.local_fire_department), text: 'Popular'),
+            Tab(icon: Icon(Icons.star), text: 'Top Rated'),
+            Tab(icon: Icon(Icons.play_circle), text: 'Now Playing'),
+            Tab(icon: Icon(Icons.upcoming), text: 'Upcoming'),
           ],
         ),
       ),
@@ -91,31 +99,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           _buildMoviesList(),
           _buildMoviesList(),
           _buildMoviesList(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          _tabController.animateTo(index);
-        },
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
         ],
       ),
     );

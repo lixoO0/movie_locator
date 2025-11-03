@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../constants/app_constants.dart';
+import 'retry_interceptor.dart';
 
 class ApiClient {
   final Dio _dio;
@@ -14,6 +15,16 @@ class ApiClient {
         'api_key': dotenv.env[AppConstants.tmdbApiKey] ?? 'd9958d28016a4e407bca77533fadc6cf',
         'language': 'en-US',
       },
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+    ));
+    
+    // Add retry interceptor (should be first to catch errors)
+    dio.interceptors.add(RetryInterceptor(
+      maxRetries: 3,
+      retryDelay: const Duration(seconds: 1),
+      maxDelay: const Duration(seconds: 10),
     ));
     
     // Add logging interceptor in debug mode

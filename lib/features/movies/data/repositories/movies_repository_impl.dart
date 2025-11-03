@@ -7,30 +7,74 @@ import '../../domain/entities/tv_show.dart';
 import '../../domain/entities/genre.dart';
 import '../../domain/repositories/movies_repository.dart';
 import '../datasources/movies_remote_datasource.dart';
+import '../datasources/movies_local_datasource.dart';
 
 class MoviesRepositoryImpl implements MoviesRepository {
   final MoviesRemoteDataSource remoteDataSource;
+  final MoviesLocalDataSource localDataSource;
   final NetworkInfo networkInfo;
   
   const MoviesRepositoryImpl({
     required this.remoteDataSource,
+    required this.localDataSource,
     required this.networkInfo,
   });
   
   @override
   Future<Either<Failure, List<Movie>>> getPopularMovies({int page = 1}) async {
+    // Try to get from cache first (offline-first)
+    if (page == 1) {
+      try {
+        final cachedMovies = await localDataSource.getCachedMovies('popular');
+        if (cachedMovies.isNotEmpty) {
+          // Return cached data immediately
+        }
+      } catch (e) {
+        // Ignore cache errors
+      }
+    }
+    
     if (await networkInfo.isConnected) {
       try {
         final movies = await remoteDataSource.getPopularMovies(page: page);
+        // Cache the results
+        if (page == 1) {
+          await localDataSource.cacheMovies(movies, 'popular');
+        }
         return Right(movies);
       } on ServerException catch (e) {
+        // Try to return cached data on error
+        if (page == 1) {
+          try {
+            final cachedMovies = await localDataSource.getCachedMovies('popular');
+            if (cachedMovies.isNotEmpty) {
+              return Right(cachedMovies);
+            }
+          } catch (_) {}
+        }
         return Left(ServerFailure(message: e.message));
       } on NetworkException catch (e) {
+        // Try to return cached data on network error
+        if (page == 1) {
+          try {
+            final cachedMovies = await localDataSource.getCachedMovies('popular');
+            if (cachedMovies.isNotEmpty) {
+              return Right(cachedMovies);
+            }
+          } catch (_) {}
+        }
         return Left(NetworkFailure(message: e.message));
       } catch (e) {
         return Left(UnknownFailure(message: e.toString()));
       }
     } else {
+      // No internet - return cached data
+      try {
+        final cachedMovies = await localDataSource.getCachedMovies('popular');
+        if (cachedMovies.isNotEmpty) {
+          return Right(cachedMovies);
+        }
+      } catch (_) {}
       return const Left(NetworkFailure(message: 'No internet connection'));
     }
   }

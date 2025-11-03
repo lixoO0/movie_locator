@@ -35,8 +35,9 @@ void main() {
       // arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
-      // act
-      await tester.pumpAndSettle();
+      // act - use pump instead of pumpAndSettle to avoid timeout with network images
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       // assert
       expect(find.text('Test Movie'), findsOneWidget);
@@ -47,7 +48,8 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // act
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       // assert
       expect(find.text('Test overview for the movie'), findsOneWidget);
@@ -58,7 +60,8 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // act
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       // assert
       expect(find.text('8.5'), findsOneWidget);
@@ -69,7 +72,8 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // act
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       // assert
       expect(find.text('2023'), findsOneWidget);
@@ -92,9 +96,10 @@ void main() {
       );
 
       // act
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.byType(MovieCard));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // assert
       expect(onTapCalled, isTrue);
@@ -107,14 +112,14 @@ void main() {
           home: Scaffold(
             body: MovieCard(
               movie: tMovie,
-              onFavoriteTap: () {},
             ),
           ),
         ),
       );
 
       // act
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       // assert
       expect(find.byIcon(Icons.favorite_border), findsOneWidget);
@@ -127,7 +132,6 @@ void main() {
           home: Scaffold(
             body: MovieCard(
               movie: tMovie,
-              onFavoriteTap: () {},
               isFavorite: true,
             ),
           ),
@@ -135,7 +139,8 @@ void main() {
       );
 
       // act
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       // assert
       expect(find.byIcon(Icons.favorite), findsOneWidget);

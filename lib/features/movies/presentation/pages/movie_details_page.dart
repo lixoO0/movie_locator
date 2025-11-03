@@ -10,6 +10,12 @@ import '../../domain/entities/movie.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart' as custom;
+import '../../../favorites/presentation/bloc/favorites_bloc.dart';
+import '../../../favorites/presentation/bloc/favorites_event.dart';
+import '../../../favorites/presentation/bloc/favorites_state.dart';
+import '../../../favorites/domain/entities/favorite_movie.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final int movieId;
@@ -24,17 +30,67 @@ class MovieDetailsPage extends StatefulWidget {
 }
 
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
+  bool _isFavorite = false;
+  
   @override
   void initState() {
     super.initState();
     context.read<MoviesBloc>().add(GetMovieDetailsEvent(movieId: widget.movieId));
+    context.read<FavoritesBloc>().add(CheckFavoriteEvent(widget.movieId));
+  }
+  
+  void _toggleFavorite(Movie movie) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! Authenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please login to add favorites'),
+          action: SnackBarAction(
+            label: 'Login',
+            onPressed: () => context.go('/login'),
+          ),
+        ),
+      );
+      return;
+    }
+    
+    if (_isFavorite) {
+      context.read<FavoritesBloc>().add(RemoveFavoriteEvent(movie.id));
+    } else {
+      final favorite = FavoriteMovie(
+        id: movie.id,
+        title: movie.title,
+        overview: movie.overview,
+        voteAverage: movie.voteAverage,
+        posterPath: movie.posterPath,
+        type: 'movie',
+        addedAt: DateTime.now(),
+      );
+      context.read<FavoritesBloc>().add(AddFavoriteEvent(favorite));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocBuilder<MoviesBloc, MoviesState>(
-        builder: (context, state) {
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<FavoritesBloc, FavoritesState>(
+          listener: (context, state) {
+            if (state is FavoriteStatusChecked) {
+              setState(() {
+                _isFavorite = state.isFavorite;
+              });
+            } else if (state is FavoritesError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        body: BlocBuilder<MoviesBloc, MoviesState>(
+          builder: (context, state) {
           if (state is MovieDetailsLoading) {
             return const LoadingWidget();
           } else if (state is MovieDetailsLoaded) {
@@ -51,6 +107,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
             child: Text('No movie details available'),
           );
         },
+        ),
       ),
     );
   }
@@ -112,14 +169,24 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
             },
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.favorite_border),
-              onPressed: () {
-                // TODO: Implement favorite functionality
+            BlocBuilder<FavoritesBloc, FavoritesState>(
+              builder: (context, favoritesState) {
+                if (favoritesState is FavoriteStatusChecked && favoritesState.id == movie.id) {
+                  _isFavorite = favoritesState.isFavorite;
+                }
+                return IconButton(
+                  icon: Icon(
+                    _isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: _isFavorite ? Colors.red : null,
+                  ),
+                  tooltip: _isFavorite ? 'Remove from favorites' : 'Add to favorites',
+                  onPressed: () => _toggleFavorite(movie),
+                );
               },
             ),
             IconButton(
               icon: const Icon(Icons.share),
+              tooltip: 'Share',
               onPressed: () {
                 // TODO: Implement share functionality
               },

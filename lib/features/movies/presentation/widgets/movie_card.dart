@@ -1,32 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/movie.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../favorites/presentation/bloc/favorites_bloc.dart';
+import '../../../favorites/presentation/bloc/favorites_event.dart';
+import '../../../favorites/presentation/bloc/favorites_state.dart';
+import '../../../favorites/domain/entities/favorite_movie.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 
-class MovieCard extends StatelessWidget {
+class MovieCard extends StatefulWidget {
   final Movie movie;
   final VoidCallback? onTap;
-  final VoidCallback? onFavoriteTap;
-  final bool isFavorite;
+  final bool? isFavorite;
 
   const MovieCard({
     super.key,
     required this.movie,
     this.onTap,
-    this.onFavoriteTap,
-    this.isFavorite = false,
+    this.isFavorite,
   });
 
   @override
+  State<MovieCard> createState() => _MovieCardState();
+}
+
+class _MovieCardState extends State<MovieCard> {
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.isFavorite ?? false;
+    if (widget.isFavorite == null) {
+      context.read<FavoritesBloc>().add(CheckFavoriteEvent(widget.movie.id));
+    }
+  }
+
+  void _handleFavoriteTap() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! Authenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please login to add favorites'),
+          action: SnackBarAction(
+            label: 'Login',
+            onPressed: () => context.go('/login'),
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (_isFavorite) {
+      context.read<FavoritesBloc>().add(RemoveFavoriteEvent(widget.movie.id));
+    } else {
+      final favorite = FavoriteMovie(
+        id: widget.movie.id,
+        title: widget.movie.title,
+        overview: widget.movie.overview,
+        voteAverage: widget.movie.voteAverage,
+        posterPath: widget.movie.posterPath,
+        type: 'movie',
+        addedAt: DateTime.now(),
+      );
+      context.read<FavoritesBloc>().add(AddFavoriteEvent(favorite));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(8.0),
-      child: InkWell(
-        onTap: onTap ?? () => context.go('/movie/${movie.id}'),
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
+    return BlocListener<FavoritesBloc, FavoritesState>(
+      listener: (context, state) {
+        if (state is FavoriteStatusChecked && state.id == widget.movie.id) {
+          setState(() {
+            _isFavorite = state.isFavorite;
+          });
+        }
+      },
+      child: Card(
+        margin: const EdgeInsets.all(8.0),
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: InkWell(
+          onTap: widget.onTap ?? () => context.go('/movie/${widget.movie.id}'),
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Movie Poster
@@ -38,13 +102,15 @@ class MovieCard extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
-                    child: CachedNetworkImage(
-                      imageUrl: movie.posterPath != null
-                          ? '${AppConstants.tmdbImageBaseUrl}/${AppConstants.imageSizeMedium}${movie.posterPath}'
-                          : 'https://via.placeholder.com/342x513?text=No+Image',
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
+                    child: Hero(
+                      tag: 'movie_poster_${widget.movie.id}',
+                      child: CachedNetworkImage(
+                        imageUrl: widget.movie.posterPath != null
+                            ? '${AppConstants.tmdbImageBaseUrl}/${AppConstants.imageSizeMedium}${widget.movie.posterPath}'
+                            : 'https://via.placeholder.com/342x513?text=No+Image',
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[300],
                         child: const Center(
@@ -59,29 +125,33 @@ class MovieCard extends StatelessWidget {
                           color: Colors.grey,
                         ),
                       ),
+                      ),
                     ),
                   ),
                   // Favorite Button
-                  if (onFavoriteTap != null)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: GestureDetector(
-                        onTap: onFavoriteTap,
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _handleFavoriteTap,
+                        borderRadius: BorderRadius.circular(20),
                         child: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: isFavorite ? Colors.red : Colors.white,
+                            _isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: _isFavorite ? Colors.red : Colors.white,
                             size: 20,
                           ),
                         ),
                       ),
                     ),
+                  ),
                   // Rating Badge
                   Positioned(
                     bottom: 8,
@@ -105,7 +175,7 @@ class MovieCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 2),
                           Text(
-                            movie.voteAverage.toStringAsFixed(1),
+                            widget.movie.voteAverage.toStringAsFixed(1),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -128,23 +198,29 @@ class MovieCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      movie.title,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      widget.movie.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      movie.releaseDate.isNotEmpty
-                          ? DateTime.tryParse(movie.releaseDate)?.year.toString() ?? 'N/A'
+                      widget.movie.releaseDate.isNotEmpty
+                          ? DateTime.tryParse(widget.movie.releaseDate)?.year.toString() ?? 'N/A'
                           : 'N/A',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Expanded(
                       child: Text(
-                        movie.overview,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        widget.movie.overview,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[700],
+                            ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -155,6 +231,7 @@ class MovieCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
