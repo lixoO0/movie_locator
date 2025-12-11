@@ -8,6 +8,7 @@ import '../../../movies/presentation/bloc/movies_state.dart';
 import '../../../movies/presentation/widgets/movie_card.dart';
 import '../../../movies/presentation/widgets/loading_widget.dart';
 import '../../../movies/presentation/widgets/error_widget.dart' as custom;
+import '../../../../shared/theme/theme_bloc.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -19,12 +20,41 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounceTimer;
+  int? selectedGenreId;
+  int? selectedYear;
+  double? minRating;
 
+  @override
+  void initState() {
+    super.initState();
+    context.read<MoviesBloc>().add(const GetMovieGenresEvent());
+  }
+  
   @override
   void dispose() {
     _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+  
+  void _applyFilters() {
+    if (_searchController.text.trim().isEmpty) {
+      // Use discover when no search query
+      context.read<MoviesBloc>().add(DiscoverMoviesEvent(
+        genreId: selectedGenreId,
+        year: selectedYear,
+        minRating: minRating,
+        page: 1,
+      ));
+    } else {
+      // When there's a search query, combine with filters using discover
+      context.read<MoviesBloc>().add(DiscoverMoviesEvent(
+        genreId: selectedGenreId,
+        year: selectedYear,
+        minRating: minRating,
+        page: 1,
+      ));
+    }
   }
 
   void _onSearchChanged(String query) {
@@ -48,10 +78,30 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Search Movies',
+          'Пошук',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
+        actions: [
+          BlocBuilder<ThemeBloc, ThemeState>(
+            builder: (context, themeState) {
+              return IconButton(
+                icon: Icon(
+                  themeState.isDark ? Icons.light_mode : Icons.dark_mode,
+                ),
+                tooltip: 'Змінити тему',
+                onPressed: () {
+                  context.read<ThemeBloc>().add(ToggleThemeEvent());
+                },
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Фільтри',
+            onPressed: () => _showFilterDialog(context),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -62,7 +112,7 @@ class _SearchPageState extends State<SearchPage> {
               controller: _searchController,
               autofocus: false,
               decoration: InputDecoration(
-                hintText: 'Search for movies...',
+                hintText: 'Пошук фільмів...',
                 prefixIcon: const Icon(Icons.search),
                         suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -200,10 +250,101 @@ class _SearchPageState extends State<SearchPage> {
 
                 // Default state
                 return const Center(
-                  child: Text('Start typing to search'),
+                  child: Text('Почніть вводити для пошуку'),
                 );
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showFilterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Фільтри'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Жанр:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              BlocBuilder<MoviesBloc, MoviesState>(
+                builder: (context, state) {
+                  if (state is GenresLoaded) {
+                    return Wrap(
+                      spacing: 8,
+                      children: state.genres.map((genre) {
+                        final isSelected = selectedGenreId == genre.id;
+                        return FilterChip(
+                          label: Text(genre.name),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              selectedGenreId = selected ? genre.id : null;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    );
+                  }
+                  return const CircularProgressIndicator();
+                },
+              ),
+              const SizedBox(height: 16),
+              const Text('Рік:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: selectedYear?.toString() ?? 'Наприклад: 2023',
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  selectedYear = value.isNotEmpty ? int.tryParse(value) : null;
+                },
+              ),
+              const SizedBox(height: 16),
+              const Text('Мінімальний рейтинг:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              TextField(
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  hintText: minRating?.toString() ?? 'Наприклад: 7.5',
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  minRating = value.isNotEmpty ? double.tryParse(value) : null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                selectedGenreId = null;
+                selectedYear = null;
+                minRating = null;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Очистити'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Скасувати'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _applyFilters();
+              Navigator.pop(context);
+            },
+            child: const Text('Застосувати'),
           ),
         ],
       ),

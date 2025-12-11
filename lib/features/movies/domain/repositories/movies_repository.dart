@@ -3,6 +3,7 @@ import '../../../../core/errors/failures.dart';
 import '../entities/movie.dart';
 import '../entities/tv_show.dart';
 import '../entities/genre.dart';
+import '../entities/video.dart';
 
 abstract class MoviesRepository {
   Future<Either<Failure, List<Movie>>> getPopularMovies({int page = 1});
@@ -20,4 +21,21 @@ abstract class MoviesRepository {
   
   Future<Either<Failure, List<Genre>>> getMovieGenres();
   Future<Either<Failure, List<Genre>>> getTvGenres();
+  
+  Future<Either<Failure, List<Movie>>> discoverMovies({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  });
+  
+  Future<Either<Failure, List<TvShow>>> discoverTvShows({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  });
+  
+  Future<Either<Failure, List<Video>>> getMovieVideos(int movieId);
+  Future<Either<Failure, List<Video>>> getTvShowVideos(int tvId);
 }

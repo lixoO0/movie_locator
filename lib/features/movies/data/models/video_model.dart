@@ -1,0 +1,46 @@
+import '../../domain/entities/video.dart';
+
+class VideoModel extends Video {
+  const VideoModel({
+    required super.id,
+    required super.key,
+    required super.name,
+    required super.site,
+    required super.type,
+    required super.official,
+  });
+  
+  factory VideoModel.fromJson(Map<String, dynamic> json) {
+    return VideoModel(
+      id: json['id'] as String? ?? '',
+      key: json['key'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      site: json['site'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      official: json['official'] as bool? ?? false,
+    );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'key': key,
+      'name': name,
+      'site': site,
+      'type': type,
+      'official': official,
+    };
+  }
+  
+  factory VideoModel.fromEntity(Video video) {
+    return VideoModel(
+      id: video.id,
+      key: video.key,
+      name: video.name,
+      site: video.site,
+      type: video.type,
+      official: video.official,
+    );
+  }
+}
+

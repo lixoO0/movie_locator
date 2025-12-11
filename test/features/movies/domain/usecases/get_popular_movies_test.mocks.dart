@@ -14,6 +14,8 @@ import 'package:movie_locator/features/movies/domain/entities/movie.dart'
     as _i6;
 import 'package:movie_locator/features/movies/domain/entities/tv_show.dart'
     as _i7;
+import 'package:movie_locator/features/movies/domain/entities/video.dart'
+    as _i9;
 import 'package:movie_locator/features/movies/domain/repositories/movies_repository.dart'
     as _i3;
 
@@ -305,4 +307,109 @@ class MockMoviesRepository extends _i1.Mock implements _i3.MoviesRepository {
           ),
         )),
       ) as _i4.Future<_i2.Either<_i5.Failure, List<_i8.Genre>>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, List<_i6.Movie>>> discoverMovies({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int? page = 1,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #discoverMovies,
+          [],
+          {
+            #genreId: genreId,
+            #year: year,
+            #minRating: minRating,
+            #page: page,
+          },
+        ),
+        returnValue: _i4.Future<_i2.Either<_i5.Failure, List<_i6.Movie>>>.value(
+            _FakeEither_0<_i5.Failure, List<_i6.Movie>>(
+          this,
+          Invocation.method(
+            #discoverMovies,
+            [],
+            {
+              #genreId: genreId,
+              #year: year,
+              #minRating: minRating,
+              #page: page,
+            },
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.Failure, List<_i6.Movie>>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, List<_i7.TvShow>>> discoverTvShows({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int? page = 1,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #discoverTvShows,
+          [],
+          {
+            #genreId: genreId,
+            #year: year,
+            #minRating: minRating,
+            #page: page,
+          },
+        ),
+        returnValue:
+            _i4.Future<_i2.Either<_i5.Failure, List<_i7.TvShow>>>.value(
+                _FakeEither_0<_i5.Failure, List<_i7.TvShow>>(
+          this,
+          Invocation.method(
+            #discoverTvShows,
+            [],
+            {
+              #genreId: genreId,
+              #year: year,
+              #minRating: minRating,
+              #page: page,
+            },
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.Failure, List<_i7.TvShow>>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, List<_i9.Video>>> getMovieVideos(
+          int? movieId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMovieVideos,
+          [movieId],
+        ),
+        returnValue: _i4.Future<_i2.Either<_i5.Failure, List<_i9.Video>>>.value(
+            _FakeEither_0<_i5.Failure, List<_i9.Video>>(
+          this,
+          Invocation.method(
+            #getMovieVideos,
+            [movieId],
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.Failure, List<_i9.Video>>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, List<_i9.Video>>> getTvShowVideos(
+          int? tvId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getTvShowVideos,
+          [tvId],
+        ),
+        returnValue: _i4.Future<_i2.Either<_i5.Failure, List<_i9.Video>>>.value(
+            _FakeEither_0<_i5.Failure, List<_i9.Video>>(
+          this,
+          Invocation.method(
+            #getTvShowVideos,
+            [tvId],
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.Failure, List<_i9.Video>>>);
 }

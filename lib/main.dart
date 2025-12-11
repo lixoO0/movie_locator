@@ -9,8 +9,12 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'shared/theme/theme_bloc.dart';
 import 'features/movies/presentation/pages/home_page.dart';
 import 'features/movies/presentation/pages/movie_details_page.dart';
+import 'features/movies/presentation/pages/tv_show_details_page.dart';
+import 'features/movies/presentation/pages/movies_catalog_page.dart';
+import 'features/movies/presentation/pages/tv_shows_catalog_page.dart';
 import 'features/search/presentation/pages/search_page.dart';
 import 'features/favorites/presentation/pages/favorites_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
@@ -51,6 +55,9 @@ class MovieLocatorApp extends StatelessWidget {
         BlocProvider<FavoritesBloc>(
           create: (context) => getIt<FavoritesBloc>(),
         ),
+        BlocProvider<ThemeBloc>(
+          create: (context) => getIt<ThemeBloc>(),
+        ),
       ],
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -66,13 +73,17 @@ class MovieLocatorApp extends StatelessWidget {
             }
           }
         },
-        child: MaterialApp.router(
-          title: 'Movie Locator',
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.system,
-          routerConfig: createRouter(),
-          debugShowCheckedModeBanner: false,
+        child: BlocBuilder<ThemeBloc, ThemeState>(
+          builder: (context, themeState) {
+            return MaterialApp.router(
+              title: 'Movie Locator',
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: themeState.themeMode,
+              routerConfig: createRouter(),
+              debugShowCheckedModeBanner: false,
+            );
+          },
         ),
       ),
     );
@@ -98,10 +109,25 @@ GoRouter createRouter() {
         builder: (context, state) => MainScaffold(child: const HomePage()),
       ),
       GoRoute(
+        path: '/movies',
+        builder: (context, state) => MainScaffold(child: const MoviesCatalogPage()),
+      ),
+      GoRoute(
+        path: '/tv-shows',
+        builder: (context, state) => MainScaffold(child: const TvShowsCatalogPage()),
+      ),
+      GoRoute(
         path: '/movie/:id',
         builder: (context, state) {
           final movieId = int.parse(state.pathParameters['id']!);
           return MovieDetailsPage(movieId: movieId);
+        },
+      ),
+      GoRoute(
+        path: '/tv-show/:id',
+        builder: (context, state) {
+          final tvId = int.parse(state.pathParameters['id']!);
+          return TvShowDetailsPage(tvId: tvId);
         },
       ),
       GoRoute(

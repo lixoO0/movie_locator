@@ -48,7 +48,19 @@ class Favorites extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Movies, Favorites])
+/// Users table for storing registered users
+class Users extends Table {
+  TextColumn get id => text()();
+  TextColumn get email => text()();
+  TextColumn get displayName => text()();
+  TextColumn get passwordHash => text()(); // Hashed password
+  DateTimeColumn get createdAt => dateTime()();
+  
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Movies, Favorites, Users])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -62,7 +74,10 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Handle migrations here
+        if (from < 2) {
+          // Add Users table in version 2
+          await m.createTable(users);
+        }
       },
     );
   }
@@ -115,6 +130,30 @@ class AppDatabase extends _$AppDatabase {
   }
   
   Future<void> clearAllFavorites() => delete(favorites).go();
+  
+  // Users queries
+  Future<List<User>> getAllUsers() => select(users).get();
+  
+  Future<User?> getUserById(String id) {
+    return (select(users)..where((u) => u.id.equals(id))).getSingleOrNull();
+  }
+  
+  Future<User?> getUserByEmail(String email) {
+    return (select(users)..where((u) => u.email.equals(email))).getSingleOrNull();
+  }
+  
+  Future<void> insertUser(UsersCompanion user) async {
+    await into(users).insert(user, mode: InsertMode.replace);
+  }
+  
+  Future<void> deleteUser(String id) async {
+    await (delete(users)..where((u) => u.id.equals(id))).go();
+  }
+  
+  Future<bool> userExists(String email) async {
+    final user = await getUserByEmail(email);
+    return user != null;
+  }
   
   // Clean old cache (older than cache duration)
   Future<void> cleanOldCache() async {

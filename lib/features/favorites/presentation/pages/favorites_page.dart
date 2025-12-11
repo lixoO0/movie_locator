@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../movies/presentation/widgets/movie_card.dart';
 import '../../../movies/domain/entities/movie.dart';
 import '../bloc/favorites_bloc.dart';
 import '../bloc/favorites_event.dart';
 import '../bloc/favorites_state.dart';
 import '../../domain/entities/favorite_movie.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -23,15 +26,63 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'My Favorites',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-      ),
-      body: BlocBuilder<FavoritesBloc, FavoritesState>(
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        // Check if user is authenticated
+        if (authState is! Authenticated) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'Обране',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              elevation: 0,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    size: 80,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Потрібна авторизація',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Увійдіть в акаунт, щоб переглядати\nваші улюблені фільми',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[500],
+                        ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => context.go('/login'),
+                    child: const Text('Увійти'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text(
+              'Обране',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            elevation: 0,
+          ),
+          body: BlocBuilder<FavoritesBloc, FavoritesState>(
         builder: (context, state) {
           if (state is FavoritesLoading) {
             return const Center(
@@ -67,6 +118,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
           return _buildEmptyState();
         },
       ),
+        );
+      },
     );
   }
 

@@ -4,6 +4,7 @@ import '../../../../core/network/api_client.dart';
 import '../models/movie_model.dart';
 import '../models/tv_show_model.dart';
 import '../models/genre_model.dart';
+import '../models/video_model.dart';
 
 abstract class MoviesRemoteDataSource {
   Future<List<MovieModel>> getPopularMovies({int page = 1});
@@ -21,6 +22,23 @@ abstract class MoviesRemoteDataSource {
   
   Future<List<GenreModel>> getMovieGenres();
   Future<List<GenreModel>> getTvGenres();
+  
+  Future<List<MovieModel>> discoverMovies({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  });
+  
+  Future<List<TvShowModel>> discoverTvShows({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  });
+  
+  Future<List<VideoModel>> getMovieVideos(int movieId);
+  Future<List<VideoModel>> getTvShowVideos(int tvId);
 }
 
 class MoviesRemoteDataSourceImpl implements MoviesRemoteDataSource {
@@ -188,6 +206,84 @@ class MoviesRemoteDataSourceImpl implements MoviesRemoteDataSource {
       final response = await apiClient.getTvGenres();
       final results = response['genres'] as List;
       return results.map((json) => GenreModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+  
+  @override
+  Future<List<MovieModel>> discoverMovies({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  }) async {
+    try {
+      final response = await apiClient.discoverMovies(
+        genreId: genreId,
+        year: year,
+        minRating: minRating,
+        page: page,
+      );
+      final results = response['results'] as List;
+      return results.map((json) => MovieModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+  
+  @override
+  Future<List<TvShowModel>> discoverTvShows({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  }) async {
+    try {
+      final response = await apiClient.discoverTvShows(
+        genreId: genreId,
+        year: year,
+        minRating: minRating,
+        page: page,
+      );
+      final results = response['results'] as List;
+      return results.map((json) => TvShowModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+  
+  @override
+  Future<List<VideoModel>> getMovieVideos(int movieId) async {
+    try {
+      final response = await apiClient.getMovieVideos(movieId);
+      final results = response['results'] as List;
+      return results
+          .map((json) => VideoModel.fromJson(json))
+          .where((video) => video.site == 'YouTube' && video.type == 'Trailer')
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+  
+  @override
+  Future<List<VideoModel>> getTvShowVideos(int tvId) async {
+    try {
+      final response = await apiClient.getTvShowVideos(tvId);
+      final results = response['results'] as List;
+      return results
+          .map((json) => VideoModel.fromJson(json))
+          .where((video) => video.site == 'YouTube' && video.type == 'Trailer')
+          .toList();
     } on DioException catch (e) {
       throw _handleDioException(e);
     } catch (e) {

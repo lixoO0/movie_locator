@@ -10,6 +10,12 @@ import 'package:movie_locator/features/movies/domain/usecases/get_top_rated_movi
 import 'package:movie_locator/features/movies/domain/usecases/get_movie_details.dart';
 import 'package:movie_locator/features/movies/domain/usecases/search_movies.dart';
 import 'package:movie_locator/features/movies/domain/usecases/get_movie_genres.dart';
+import 'package:movie_locator/features/movies/domain/usecases/discover_movies.dart';
+import 'package:movie_locator/features/movies/domain/usecases/get_movie_videos.dart';
+import 'package:movie_locator/features/movies/domain/usecases/get_popular_tv_shows.dart';
+import 'package:movie_locator/features/movies/domain/usecases/discover_tv_shows.dart';
+import 'package:movie_locator/features/movies/domain/usecases/get_tv_show_details.dart';
+import 'package:movie_locator/features/movies/domain/usecases/get_tv_show_videos.dart';
 import 'package:movie_locator/features/movies/presentation/bloc/movies_bloc.dart';
 import 'package:movie_locator/features/movies/presentation/bloc/movies_event.dart';
 import 'package:movie_locator/features/movies/presentation/bloc/movies_state.dart';
@@ -23,6 +29,12 @@ import 'movies_bloc_test.mocks.dart';
   GetMovieDetails,
   SearchMovies,
   GetMovieGenres,
+  DiscoverMovies,
+  GetMovieVideos,
+  GetPopularTvShows,
+  DiscoverTvShows,
+  GetTvShowDetails,
+  GetTvShowVideos,
 ])
 void main() {
   late MoviesBloc moviesBloc;
@@ -31,6 +43,12 @@ void main() {
   late MockGetMovieDetails mockGetMovieDetails;
   late MockSearchMovies mockSearchMovies;
   late MockGetMovieGenres mockGetMovieGenres;
+  late MockDiscoverMovies mockDiscoverMovies;
+  late MockGetMovieVideos mockGetMovieVideos;
+  late MockGetPopularTvShows mockGetPopularTvShows;
+  late MockDiscoverTvShows mockDiscoverTvShows;
+  late MockGetTvShowDetails mockGetTvShowDetails;
+  late MockGetTvShowVideos mockGetTvShowVideos;
 
   setUp(() {
     mockGetPopularMovies = MockGetPopularMovies();
@@ -38,6 +56,12 @@ void main() {
     mockGetMovieDetails = MockGetMovieDetails();
     mockSearchMovies = MockSearchMovies();
     mockGetMovieGenres = MockGetMovieGenres();
+    mockDiscoverMovies = MockDiscoverMovies();
+    mockGetMovieVideos = MockGetMovieVideos();
+    mockGetPopularTvShows = MockGetPopularTvShows();
+    mockDiscoverTvShows = MockDiscoverTvShows();
+    mockGetTvShowDetails = MockGetTvShowDetails();
+    mockGetTvShowVideos = MockGetTvShowVideos();
 
     moviesBloc = MoviesBloc(
       getPopularMovies: mockGetPopularMovies,
@@ -45,6 +69,12 @@ void main() {
       getMovieDetails: mockGetMovieDetails,
       searchMovies: mockSearchMovies,
       getMovieGenres: mockGetMovieGenres,
+      discoverMovies: mockDiscoverMovies,
+      getMovieVideos: mockGetMovieVideos,
+      getPopularTvShows: mockGetPopularTvShows,
+      discoverTvShows: mockDiscoverTvShows,
+      getTvShowDetails: mockGetTvShowDetails,
+      getTvShowVideos: mockGetTvShowVideos,
     );
   });
 

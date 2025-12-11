@@ -5,6 +5,7 @@ import '../../../../core/network/network_info.dart';
 import '../../domain/entities/movie.dart';
 import '../../domain/entities/tv_show.dart';
 import '../../domain/entities/genre.dart';
+import '../../domain/entities/video.dart';
 import '../../domain/repositories/movies_repository.dart';
 import '../datasources/movies_remote_datasource.dart';
 import '../datasources/movies_local_datasource.dart';
@@ -283,6 +284,98 @@ class MoviesRepositoryImpl implements MoviesRepository {
       try {
         final genres = await remoteDataSource.getTvGenres();
         return Right(genres);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } catch (e) {
+        return Left(UnknownFailure(message: e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, List<Movie>>> discoverMovies({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final movies = await remoteDataSource.discoverMovies(
+          genreId: genreId,
+          year: year,
+          minRating: minRating,
+          page: page,
+        );
+        return Right(movies);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } catch (e) {
+        return Left(UnknownFailure(message: e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, List<TvShow>>> discoverTvShows({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final tvShows = await remoteDataSource.discoverTvShows(
+          genreId: genreId,
+          year: year,
+          minRating: minRating,
+          page: page,
+        );
+        return Right(tvShows);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } catch (e) {
+        return Left(UnknownFailure(message: e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, List<Video>>> getMovieVideos(int movieId) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final videos = await remoteDataSource.getMovieVideos(movieId);
+        return Right(videos);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } catch (e) {
+        return Left(UnknownFailure(message: e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+  
+  @override
+  Future<Either<Failure, List<Video>>> getTvShowVideos(int tvId) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final videos = await remoteDataSource.getTvShowVideos(tvId);
+        return Right(videos);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));
       } on NetworkException catch (e) {

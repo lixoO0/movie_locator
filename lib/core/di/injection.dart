@@ -1,5 +1,4 @@
 import 'package:get_it/get_it.dart';
-import 'package:injectable/injectable.dart';
 import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -18,7 +17,14 @@ import '../../features/movies/domain/usecases/get_top_rated_movies.dart';
 import '../../features/movies/domain/usecases/get_movie_details.dart';
 import '../../features/movies/domain/usecases/search_movies.dart';
 import '../../features/movies/domain/usecases/get_movie_genres.dart';
+import '../../features/movies/domain/usecases/discover_movies.dart';
+import '../../features/movies/domain/usecases/get_movie_videos.dart';
+import '../../features/movies/domain/usecases/get_popular_tv_shows.dart';
+import '../../features/movies/domain/usecases/discover_tv_shows.dart';
+import '../../features/movies/domain/usecases/get_tv_show_details.dart';
+import '../../features/movies/domain/usecases/get_tv_show_videos.dart';
 import '../../features/movies/presentation/bloc/movies_bloc.dart';
+import '../../shared/theme/theme_bloc.dart';
 import '../../features/auth/data/datasources/auth_remote_datasource.dart';
 import '../../features/auth/data/datasources/auth_local_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -93,10 +99,19 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => GetMovieDetails(getIt<MoviesRepository>()));
   getIt.registerLazySingleton(() => SearchMovies(getIt<MoviesRepository>()));
   getIt.registerLazySingleton(() => GetMovieGenres(getIt<MoviesRepository>()));
+  getIt.registerLazySingleton(() => DiscoverMovies(getIt<MoviesRepository>()));
+  getIt.registerLazySingleton(() => GetMovieVideos(getIt<MoviesRepository>()));
+  getIt.registerLazySingleton(() => GetPopularTvShows(getIt<MoviesRepository>()));
+  getIt.registerLazySingleton(() => DiscoverTvShows(getIt<MoviesRepository>()));
+  getIt.registerLazySingleton(() => GetTvShowDetails(getIt<MoviesRepository>()));
+  getIt.registerLazySingleton(() => GetTvShowVideos(getIt<MoviesRepository>()));
   
   // Initialize Auth Data Sources
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(dio: getIt<Dio>()),
+    () => AuthRemoteDataSourceImpl(
+      dio: getIt<Dio>(),
+      database: getIt<AppDatabase>(),
+    ),
   );
   
   getIt.registerLazySingleton<AuthLocalDataSource>(
@@ -126,7 +141,17 @@ Future<void> configureDependencies() async {
       getMovieDetails: getIt<GetMovieDetails>(),
       searchMovies: getIt<SearchMovies>(),
       getMovieGenres: getIt<GetMovieGenres>(),
+      discoverMovies: getIt<DiscoverMovies>(),
+      getMovieVideos: getIt<GetMovieVideos>(),
+      getPopularTvShows: getIt<GetPopularTvShows>(),
+      discoverTvShows: getIt<DiscoverTvShows>(),
+      getTvShowDetails: getIt<GetTvShowDetails>(),
+      getTvShowVideos: getIt<GetTvShowVideos>(),
     ),
+  );
+  
+  getIt.registerFactory(
+    () => ThemeBloc(prefs: getIt<SharedPreferences>()),
   );
   
   getIt.registerFactory(

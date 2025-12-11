@@ -107,4 +107,46 @@ class ApiClient {
     final response = await _dio.get('/genre/tv/list');
     return response.data;
   }
+  
+  // Discover endpoints
+  Future<Map<String, dynamic>> discoverMovies({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  }) async {
+    final queryParams = <String, dynamic>{'page': page};
+    if (genreId != null) queryParams['with_genres'] = genreId;
+    if (year != null) queryParams['year'] = year;
+    if (minRating != null) queryParams['vote_average.gte'] = minRating;
+    
+    final response = await _dio.get('/discover/movie', queryParameters: queryParams);
+    return response.data;
+  }
+  
+  Future<Map<String, dynamic>> discoverTvShows({
+    int? genreId,
+    int? year,
+    double? minRating,
+    int page = 1,
+  }) async {
+    final queryParams = <String, dynamic>{'page': page};
+    if (genreId != null) queryParams['with_genres'] = genreId;
+    if (year != null) queryParams['first_air_date_year'] = year;
+    if (minRating != null) queryParams['vote_average.gte'] = minRating;
+    
+    final response = await _dio.get('/discover/tv', queryParameters: queryParams);
+    return response.data;
+  }
+  
+  // Video endpoints
+  Future<Map<String, dynamic>> getMovieVideos(int movieId) async {
+    final response = await _dio.get('/movie/$movieId/videos');
+    return response.data;
+  }
+  
+  Future<Map<String, dynamic>> getTvShowVideos(int tvId) async {
+    final response = await _dio.get('/tv/$tvId/videos');
+    return response.data;
+  }
 }

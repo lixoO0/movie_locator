@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../bloc/movies_bloc.dart';
 import '../bloc/movies_event.dart';
 import '../bloc/movies_state.dart';
-import '../../domain/entities/movie.dart';
+import '../../domain/entities/tv_show.dart';
 import '../../domain/entities/video.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../widgets/loading_widget.dart';
@@ -19,29 +19,29 @@ import '../../../favorites/domain/entities/favorite_movie.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 
-class MovieDetailsPage extends StatefulWidget {
-  final int movieId;
+class TvShowDetailsPage extends StatefulWidget {
+  final int tvId;
 
-  const MovieDetailsPage({
+  const TvShowDetailsPage({
     super.key,
-    required this.movieId,
+    required this.tvId,
   });
 
   @override
-  State<MovieDetailsPage> createState() => _MovieDetailsPageState();
+  State<TvShowDetailsPage> createState() => _TvShowDetailsPageState();
 }
 
-class _MovieDetailsPageState extends State<MovieDetailsPage> {
+class _TvShowDetailsPageState extends State<TvShowDetailsPage> {
   bool _isFavorite = false;
   
   @override
   void initState() {
     super.initState();
-    // Load movie details and videos
+    // Load TV show details and videos
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MoviesBloc>().add(GetMovieDetailsEvent(movieId: widget.movieId));
-      context.read<MoviesBloc>().add(GetMovieVideosEvent(movieId: widget.movieId));
-      context.read<FavoritesBloc>().add(CheckFavoriteEvent(widget.movieId));
+      context.read<MoviesBloc>().add(GetTvShowDetailsEvent(tvId: widget.tvId));
+      context.read<MoviesBloc>().add(GetTvShowVideosEvent(tvId: widget.tvId));
+      context.read<FavoritesBloc>().add(CheckFavoriteEvent(widget.tvId));
     });
   }
   
@@ -66,7 +66,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     }
   }
   
-  void _toggleFavorite(Movie movie) {
+  void _toggleFavorite(TvShow tvShow) {
     final authState = context.read<AuthBloc>().state;
     if (authState is! Authenticated) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -82,15 +82,15 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     }
     
     if (_isFavorite) {
-      context.read<FavoritesBloc>().add(RemoveFavoriteEvent(movie.id));
+      context.read<FavoritesBloc>().add(RemoveFavoriteEvent(tvShow.id));
     } else {
       final favorite = FavoriteMovie(
-        id: movie.id,
-        title: movie.title,
-        overview: movie.overview,
-        voteAverage: movie.voteAverage,
-        posterPath: movie.posterPath,
-        type: 'movie',
+        id: tvShow.id,
+        title: tvShow.name,
+        overview: tvShow.overview,
+        voteAverage: tvShow.voteAverage,
+        posterPath: tvShow.posterPath,
+        type: 'tv',
         addedAt: DateTime.now(),
       );
       context.read<FavoritesBloc>().add(AddFavoriteEvent(favorite));
@@ -118,21 +118,21 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       child: Scaffold(
         body: BlocBuilder<MoviesBloc, MoviesState>(
           buildWhen: (previous, current) {
-            // Only rebuild for movie details states
-            return current is MovieDetailsLoading ||
-                   current is MovieDetailsLoaded ||
-                   current is MovieDetailsError;
+            // Only rebuild for TV show details states
+            return current is TvShowDetailsLoading ||
+                   current is TvShowDetailsLoaded ||
+                   current is TvShowDetailsError;
           },
           builder: (context, state) {
-            if (state is MovieDetailsLoading) {
+            if (state is TvShowDetailsLoading) {
               return const LoadingWidget();
-            } else if (state is MovieDetailsLoaded) {
-              return _buildMovieDetails(state.movie);
-            } else if (state is MovieDetailsError) {
+            } else if (state is TvShowDetailsLoaded) {
+              return _buildTvShowDetails(state.tvShow);
+            } else if (state is TvShowDetailsError) {
               return custom.CustomErrorWidget(
                 message: state.message,
                 onRetry: () {
-                  context.read<MoviesBloc>().add(GetMovieDetailsEvent(movieId: widget.movieId));
+                  context.read<MoviesBloc>().add(GetTvShowDetailsEvent(tvId: widget.tvId));
                 },
               );
             }
@@ -144,7 +144,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     );
   }
 
-  Widget _buildMovieDetails(Movie movie) {
+  Widget _buildTvShowDetails(TvShow tvShow) {
     return CustomScrollView(
       slivers: [
         // App Bar with backdrop image
@@ -155,9 +155,9 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
             background: Stack(
               fit: StackFit.expand,
               children: [
-                if (movie.backdropPath != null)
+                if (tvShow.backdropPath != null)
                   CachedNetworkImage(
-                    imageUrl: '${AppConstants.tmdbImageBaseUrl}/${AppConstants.imageSizeLarge}${movie.backdropPath}',
+                    imageUrl: '${AppConstants.tmdbImageBaseUrl}/${AppConstants.imageSizeLarge}${tvShow.backdropPath}',
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
                       color: Colors.grey[300],
@@ -168,7 +168,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                     errorWidget: (context, url, error) => Container(
                       color: Colors.grey[300],
                       child: const Icon(
-                        Icons.movie,
+                        Icons.tv,
                         size: 50,
                         color: Colors.grey,
                       ),
@@ -203,7 +203,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           actions: [
             BlocBuilder<FavoritesBloc, FavoritesState>(
               builder: (context, favoritesState) {
-                if (favoritesState is FavoriteStatusChecked && favoritesState.id == movie.id) {
+                if (favoritesState is FavoriteStatusChecked && favoritesState.id == tvShow.id) {
                   _isFavorite = favoritesState.isFavorite;
                 }
                 return IconButton(
@@ -212,7 +212,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                     color: _isFavorite ? Colors.red : null,
                   ),
                   tooltip: _isFavorite ? 'Remove from favorites' : 'Add to favorites',
-                  onPressed: () => _toggleFavorite(movie),
+                  onPressed: () => _toggleFavorite(tvShow),
                 );
               },
             ),
@@ -225,14 +225,14 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
             ),
           ],
         ),
-        // Movie content
+        // TV Show content
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Movie title and rating
+                // TV Show title and rating
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -241,13 +241,13 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            movie.title,
+                            tvShow.name,
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            movie.releaseDate.isNotEmpty
-                                ? DateTime.tryParse(movie.releaseDate)?.year.toString() ?? 'N/A'
+                            tvShow.firstAirDate.isNotEmpty
+                                ? DateTime.tryParse(tvShow.firstAirDate)?.year.toString() ?? 'N/A'
                                 : 'N/A',
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
@@ -273,14 +273,14 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            movie.voteAverage.toStringAsFixed(1),
+                            tvShow.voteAverage.toStringAsFixed(1),
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            '${movie.voteCount} votes',
+                            '${tvShow.voteCount} votes',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Colors.white70,
                             ),
@@ -298,15 +298,19 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  movie.overview,
+                  tvShow.overview,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 24),
                 // Additional info
-                _buildInfoRow('Original Title', movie.originalTitle),
-                _buildInfoRow('Language', movie.originalLanguage.toUpperCase()),
-                _buildInfoRow('Adult Content', movie.adult ? 'Yes' : 'No'),
-                _buildInfoRow('Popularity', movie.popularity.toStringAsFixed(0)),
+                _buildInfoRow('Original Name', tvShow.originalName),
+                _buildInfoRow('Language', tvShow.originalLanguage.toUpperCase()),
+                _buildInfoRow('First Air Date', tvShow.firstAirDate.isNotEmpty 
+                    ? tvShow.firstAirDate 
+                    : 'N/A'),
+                _buildInfoRow('Popularity', tvShow.popularity.toStringAsFixed(0)),
+                if (tvShow.originCountry.isNotEmpty)
+                  _buildInfoRow('Origin Country', tvShow.originCountry.join(', ')),
                 const SizedBox(height: 24),
                 // Trailers section
                 BlocBuilder<MoviesBloc, MoviesState>(
@@ -474,3 +478,4 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     );
   }
 }
+

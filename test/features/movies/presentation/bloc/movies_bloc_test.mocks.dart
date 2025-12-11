@@ -12,16 +12,32 @@ import 'package:movie_locator/features/movies/domain/entities/genre.dart'
     as _i12;
 import 'package:movie_locator/features/movies/domain/entities/movie.dart'
     as _i7;
+import 'package:movie_locator/features/movies/domain/entities/tv_show.dart'
+    as _i17;
+import 'package:movie_locator/features/movies/domain/entities/video.dart'
+    as _i15;
 import 'package:movie_locator/features/movies/domain/repositories/movies_repository.dart'
     as _i2;
+import 'package:movie_locator/features/movies/domain/usecases/discover_movies.dart'
+    as _i13;
+import 'package:movie_locator/features/movies/domain/usecases/discover_tv_shows.dart'
+    as _i18;
 import 'package:movie_locator/features/movies/domain/usecases/get_movie_details.dart'
     as _i9;
 import 'package:movie_locator/features/movies/domain/usecases/get_movie_genres.dart'
     as _i11;
+import 'package:movie_locator/features/movies/domain/usecases/get_movie_videos.dart'
+    as _i14;
 import 'package:movie_locator/features/movies/domain/usecases/get_popular_movies.dart'
     as _i4;
+import 'package:movie_locator/features/movies/domain/usecases/get_popular_tv_shows.dart'
+    as _i16;
 import 'package:movie_locator/features/movies/domain/usecases/get_top_rated_movies.dart'
     as _i8;
+import 'package:movie_locator/features/movies/domain/usecases/get_tv_show_details.dart'
+    as _i19;
+import 'package:movie_locator/features/movies/domain/usecases/get_tv_show_videos.dart'
+    as _i20;
 import 'package:movie_locator/features/movies/domain/usecases/search_movies.dart'
     as _i10;
 
@@ -238,4 +254,224 @@ class MockGetMovieGenres extends _i1.Mock implements _i11.GetMovieGenres {
           ),
         )),
       ) as _i5.Future<_i3.Either<_i6.Failure, List<_i12.Genre>>>);
+}
+
+/// A class which mocks [DiscoverMovies].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockDiscoverMovies extends _i1.Mock implements _i13.DiscoverMovies {
+  MockDiscoverMovies() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.MoviesRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeMoviesRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.MoviesRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, List<_i7.Movie>>> call(
+          _i13.DiscoverMoviesParams? params) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue: _i5.Future<_i3.Either<_i6.Failure, List<_i7.Movie>>>.value(
+            _FakeEither_1<_i6.Failure, List<_i7.Movie>>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i5.Future<_i3.Either<_i6.Failure, List<_i7.Movie>>>);
+}
+
+/// A class which mocks [GetMovieVideos].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetMovieVideos extends _i1.Mock implements _i14.GetMovieVideos {
+  MockGetMovieVideos() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.MoviesRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeMoviesRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.MoviesRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, List<_i15.Video>>> call(
+          _i14.GetMovieVideosParams? params) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue:
+            _i5.Future<_i3.Either<_i6.Failure, List<_i15.Video>>>.value(
+                _FakeEither_1<_i6.Failure, List<_i15.Video>>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i5.Future<_i3.Either<_i6.Failure, List<_i15.Video>>>);
+}
+
+/// A class which mocks [GetPopularTvShows].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetPopularTvShows extends _i1.Mock implements _i16.GetPopularTvShows {
+  MockGetPopularTvShows() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.MoviesRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeMoviesRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.MoviesRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, List<_i17.TvShow>>> call(
+          _i16.GetPopularTvShowsParams? params) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue:
+            _i5.Future<_i3.Either<_i6.Failure, List<_i17.TvShow>>>.value(
+                _FakeEither_1<_i6.Failure, List<_i17.TvShow>>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i5.Future<_i3.Either<_i6.Failure, List<_i17.TvShow>>>);
+}
+
+/// A class which mocks [DiscoverTvShows].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockDiscoverTvShows extends _i1.Mock implements _i18.DiscoverTvShows {
+  MockDiscoverTvShows() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.MoviesRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeMoviesRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.MoviesRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, List<_i17.TvShow>>> call(
+          _i18.DiscoverTvShowsParams? params) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue:
+            _i5.Future<_i3.Either<_i6.Failure, List<_i17.TvShow>>>.value(
+                _FakeEither_1<_i6.Failure, List<_i17.TvShow>>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i5.Future<_i3.Either<_i6.Failure, List<_i17.TvShow>>>);
+}
+
+/// A class which mocks [GetTvShowDetails].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetTvShowDetails extends _i1.Mock implements _i19.GetTvShowDetails {
+  MockGetTvShowDetails() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.MoviesRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeMoviesRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.MoviesRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, _i17.TvShow>> call(
+          _i19.GetTvShowDetailsParams? params) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue: _i5.Future<_i3.Either<_i6.Failure, _i17.TvShow>>.value(
+            _FakeEither_1<_i6.Failure, _i17.TvShow>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i5.Future<_i3.Either<_i6.Failure, _i17.TvShow>>);
+}
+
+/// A class which mocks [GetTvShowVideos].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetTvShowVideos extends _i1.Mock implements _i20.GetTvShowVideos {
+  MockGetTvShowVideos() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.MoviesRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeMoviesRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.MoviesRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, List<_i15.Video>>> call(
+          _i20.GetTvShowVideosParams? params) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [params],
+        ),
+        returnValue:
+            _i5.Future<_i3.Either<_i6.Failure, List<_i15.Video>>>.value(
+                _FakeEither_1<_i6.Failure, List<_i15.Video>>(
+          this,
+          Invocation.method(
+            #call,
+            [params],
+          ),
+        )),
+      ) as _i5.Future<_i3.Either<_i6.Failure, List<_i15.Video>>>);
 }

@@ -15,23 +15,26 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   int _getCurrentIndex(String location) {
-    switch (location) {
-      case '/':
-        return 0;
-      case '/search':
-        return 1;
-      case '/favorites':
-        return 2;
-      case '/profile':
-        return 3;
-      default:
-        return 0;
+    if (location == '/' || location.startsWith('/movies') || location.startsWith('/tv-shows')) {
+      return 0;
+    } else if (location == '/search') {
+      return 1;
+    } else if (location == '/favorites') {
+      return 2;
+    } else if (location == '/profile') {
+      return 3;
     }
+    return 0;
   }
 
   void _onBottomNavTap(int index) {
+    final currentLocation = GoRouterState.of(context).uri.path;
     switch (index) {
       case 0:
+        // If already on home, movies, or tv-shows, stay there
+        if (currentLocation == '/' || currentLocation.startsWith('/movies') || currentLocation.startsWith('/tv-shows')) {
+          return;
+        }
         context.go('/');
         break;
       case 1:
@@ -51,11 +54,12 @@ class _MainScaffoldState extends State<MainScaffold> {
     final location = GoRouterState.of(context).uri.path;
     final currentIndex = _getCurrentIndex(location);
     
-    // Don't show bottom nav on auth pages or movie details
+    // Don't show bottom nav on auth pages or movie/tv show details
     final hideBottomNav = [
       '/login',
       '/register',
       '/movie',
+      '/tv-show',
     ].any((path) => location.startsWith(path));
 
     return Scaffold(
@@ -72,22 +76,22 @@ class _MainScaffoldState extends State<MainScaffold> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.movie),
                   activeIcon: Icon(Icons.movie),
-                  label: 'Movies',
+                  label: 'Фільми',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.search),
                   activeIcon: Icon(Icons.search),
-                  label: 'Search',
+                  label: 'Пошук',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.favorite_border),
                   activeIcon: Icon(Icons.favorite),
-                  label: 'Favorites',
+                  label: 'Обране',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
                   activeIcon: Icon(Icons.person),
-                  label: 'Profile',
+                  label: 'Профіль',
                 ),
               ],
             ),

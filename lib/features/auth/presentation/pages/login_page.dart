@@ -108,9 +108,11 @@ class _LoginPageState extends State<LoginPage> {
                               TextFormField(
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
+                                style: const TextStyle(color: Colors.black87),
                                 decoration: InputDecoration(
                                   labelText: 'Email',
-                                  prefixIcon: const Icon(Icons.email_outlined),
+                                  labelStyle: const TextStyle(color: Colors.black54),
+                                  prefixIcon: const Icon(Icons.email_outlined, color: Colors.black54),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -131,12 +133,15 @@ class _LoginPageState extends State<LoginPage> {
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
+                                style: const TextStyle(color: Colors.black87),
                                 decoration: InputDecoration(
                                   labelText: 'Password',
-                                  prefixIcon: const Icon(Icons.lock_outlined),
+                                  labelStyle: const TextStyle(color: Colors.black54),
+                                  prefixIcon: const Icon(Icons.lock_outlined, color: Colors.black54),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                      color: Colors.black54,
                                     ),
                                     onPressed: () {
                                       setState(() {

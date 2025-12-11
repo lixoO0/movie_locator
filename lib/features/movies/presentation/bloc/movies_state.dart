@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/movie.dart';
+import '../../domain/entities/tv_show.dart';
 import '../../domain/entities/genre.dart';
+import '../../domain/entities/video.dart';
 
 abstract class MoviesState extends Equatable {
   const MoviesState();
@@ -84,6 +86,61 @@ class GenresError extends MoviesState {
   final String message;
   
   const GenresError({required this.message});
+  
+  @override
+  List<Object> get props => [message];
+}
+
+class VideosLoading extends MoviesState {}
+
+class VideosLoaded extends MoviesState {
+  final List<Video> videos;
+  
+  const VideosLoaded({required this.videos});
+  
+  @override
+  List<Object> get props => [videos];
+}
+
+class VideosError extends MoviesState {
+  final String message;
+  
+  const VideosError({required this.message});
+  
+  @override
+  List<Object> get props => [message];
+}
+
+class TvShowsLoaded extends MoviesState {
+  final List<TvShow> tvShows;
+  final bool hasReachedMax;
+  final int currentPage;
+  
+  const TvShowsLoaded({
+    required this.tvShows,
+    this.hasReachedMax = false,
+    this.currentPage = 1,
+  });
+  
+  @override
+  List<Object?> get props => [tvShows, hasReachedMax, currentPage];
+}
+
+class TvShowDetailsLoading extends MoviesState {}
+
+class TvShowDetailsLoaded extends MoviesState {
+  final TvShow tvShow;
+  
+  const TvShowDetailsLoaded({required this.tvShow});
+  
+  @override
+  List<Object> get props => [tvShow];
+}
+
+class TvShowDetailsError extends MoviesState {
+  final String message;
+  
+  const TvShowDetailsError({required this.message});
   
   @override
   List<Object> get props => [message];

@@ -20,7 +20,7 @@ class AppConstants {
   
   // Database
   static const String databaseName = 'movie_locator.db';
-  static const int databaseVersion = 1;
+  static const int databaseVersion = 2; // Incremented for Users table
   
   // Storage Keys
   static const String favoritesBoxName = 'favorites';

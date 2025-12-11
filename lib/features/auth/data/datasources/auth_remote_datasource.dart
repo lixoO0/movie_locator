@@ -1,83 +1,102 @@
 import 'package:dio/dio.dart';
-import '../../domain/entities/user.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
+import '../../domain/entities/user.dart' as auth_entity;
 import '../../../../core/errors/exceptions.dart' show ServerException, AuthenticationException;
+import '../../../../core/database/app_database.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<User> login(String email, String password);
-  Future<User> register(String email, String password, String displayName);
+  Future<auth_entity.User> login(String email, String password);
+  Future<auth_entity.User> register(String email, String password, String displayName);
   Future<void> logout();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio dio;
+  final AppDatabase database;
   
-  // Mock API endpoint - in production, replace with real auth API
-  static const String _baseUrl = 'https://api.example.com/auth';
+  AuthRemoteDataSourceImpl({
+    required this.dio,
+    required this.database,
+  });
   
-  AuthRemoteDataSourceImpl({required this.dio});
+  String _hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
   
   @override
-  Future<User> login(String email, String password) async {
+  Future<auth_entity.User> login(String email, String password) async {
     try {
-      // Mock implementation - replace with real API call
-      // For now, simulate a successful login
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Check user in database
+      final dbUser = await database.getUserByEmail(email);
       
-      // In production, make actual API call:
-      // final response = await dio.post(
-      //   '$_baseUrl/login',
-      //   data: {'email': email, 'password': password},
-      // );
-      
-      // Mock user response
-      final user = UserModel(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        email: email,
-        displayName: email.split('@')[0],
-      );
-      
-      return user;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw AuthenticationException(message: 'Invalid email or password');
+      if (dbUser == null) {
+        throw AuthenticationException(message: 'Користувач з таким email не знайдений');
       }
-      throw ServerException(message: e.message ?? 'Login failed');
+      
+      // Verify password
+      final passwordHash = _hashPassword(password);
+      if (dbUser.passwordHash != passwordHash) {
+        throw AuthenticationException(message: 'Невірний пароль');
+      }
+      
+      // Return user entity
+      return UserModel(
+        id: dbUser.id,
+        email: dbUser.email,
+        displayName: dbUser.displayName,
+      );
+    } on AuthenticationException {
+      rethrow;
     } catch (e) {
+      if (e is AuthenticationException) {
+        rethrow;
+      }
       throw ServerException(message: e.toString());
     }
   }
   
   @override
-  Future<User> register(String email, String password, String displayName) async {
+  Future<auth_entity.User> register(String email, String password, String displayName) async {
     try {
-      // Mock implementation - replace with real API call
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Check if user already exists
+      final existingUser = await database.getUserByEmail(email);
+      if (existingUser != null) {
+        throw AuthenticationException(message: 'Користувач з таким email вже існує');
+      }
       
-      // In production, make actual API call:
-      // final response = await dio.post(
-      //   '$_baseUrl/register',
-      //   data: {
-      //     'email': email,
-      //     'password': password,
-      //     'displayName': displayName,
-      //   },
-      // );
+      // Hash password
+      final passwordHash = _hashPassword(password);
       
-      // Mock user response
-      final user = UserModel(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+      // Create user ID
+      final userId = 'user_${DateTime.now().millisecondsSinceEpoch}';
+      
+      // Save user to database
+      await database.insertUser(
+        UsersCompanion.insert(
+          id: userId,
+          email: email,
+          displayName: displayName,
+          passwordHash: passwordHash,
+          createdAt: DateTime.now(),
+        ),
+      );
+      
+      // Return user entity
+      return UserModel(
+        id: userId,
         email: email,
         displayName: displayName,
       );
-      
-      return user;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 409) {
-        throw AuthenticationException(message: 'Email already exists');
-      }
-      throw ServerException(message: e.message ?? 'Registration failed');
+    } on AuthenticationException {
+      rethrow;
     } catch (e) {
+      if (e is AuthenticationException) {
+        rethrow;
+      }
       throw ServerException(message: e.toString());
     }
   }

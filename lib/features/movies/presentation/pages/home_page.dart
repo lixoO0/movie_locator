@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../bloc/movies_bloc.dart';
 import '../bloc/movies_event.dart';
 import '../bloc/movies_state.dart';
-import '../widgets/movie_card.dart';
 import '../widgets/movie_list.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart' as custom;
+import '../../../../shared/theme/theme_bloc.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,7 +19,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late TabController _tabController;
-  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -42,10 +41,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void _onTabChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-    
     // Load data based on selected tab
     switch (index) {
       case 0:
@@ -73,10 +68,68 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: 'Search',
-            onPressed: () => context.go('/search'),
+          BlocBuilder<ThemeBloc, ThemeState>(
+            builder: (context, themeState) {
+              return IconButton(
+                icon: Icon(
+                  themeState.isDark 
+                      ? Icons.light_mode 
+                      : Icons.dark_mode,
+                ),
+                tooltip: 'Змінити тему',
+                onPressed: () {
+                  context.read<ThemeBloc>().add(ToggleThemeEvent());
+                },
+              );
+            },
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case 'movies':
+                  context.go('/movies');
+                  break;
+                case 'tv':
+                  context.go('/tv-shows');
+                  break;
+                case 'search':
+                  context.go('/search');
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'movies',
+                child: Row(
+                  children: [
+                    Icon(Icons.movie),
+                    SizedBox(width: 8),
+                    Text('Каталог фільмів'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'tv',
+                child: Row(
+                  children: [
+                    Icon(Icons.tv),
+                    SizedBox(width: 8),
+                    Text('Каталог серіалів'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'search',
+                child: Row(
+                  children: [
+                    Icon(Icons.search),
+                    SizedBox(width: 8),
+                    Text('Пошук'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
         bottom: TabBar(
@@ -85,10 +138,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           tabs: const [
-            Tab(icon: Icon(Icons.local_fire_department), text: 'Popular'),
-            Tab(icon: Icon(Icons.star), text: 'Top Rated'),
-            Tab(icon: Icon(Icons.play_circle), text: 'Now Playing'),
-            Tab(icon: Icon(Icons.upcoming), text: 'Upcoming'),
+            Tab(icon: Icon(Icons.local_fire_department), text: 'Популярні'),
+            Tab(icon: Icon(Icons.star), text: 'Топ рейтинг'),
+            Tab(icon: Icon(Icons.play_circle), text: 'Зараз в прокаті'),
+            Tab(icon: Icon(Icons.upcoming), text: 'Скоро'),
           ],
         ),
       ),
